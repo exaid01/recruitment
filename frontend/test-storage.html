@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>检查LocalStorage</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>LocalStorage用户数据</h1>
+        <pre>{{ userData }}</pre>
+        <button @click="testApiCall">测试API调用</button>
+        <h2>API响应结果</h2>
+        <pre>{{ apiResponse }}</pre>
+    </div>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                userData: '加载中...',
+                apiResponse: '未调用'
+            },
+            mounted() {
+                // 检查localStorage中的user数据
+                const user = localStorage.getItem('user');
+                if (user) {
+                    this.userData = JSON.stringify(JSON.parse(user), null, 2);
+                } else {
+                    this.userData = '未找到用户数据';
+                }
+            },
+            methods: {
+                testApiCall() {
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    const companyId = user && user.companyId;
+                    this.apiResponse = '调用中...';
+
+                    if (!companyId) {
+                        this.apiResponse = '无法获取公司ID';
+                        return;
+                    }
+
+                    const url = `http://localhost:8081/api/jobs/company/${companyId}`;
+                    axios.get(url)
+                        .then(response => {
+                            this.apiResponse = JSON.stringify(response.data, null, 2);
+                        })
+                        .catch(error => {
+                            this.apiResponse = `错误: ${error.message}`;
+                        });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
